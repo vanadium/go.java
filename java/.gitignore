@@ -1,5 +1,3 @@
-/.jiri
-
 # Gradle dirs
 build/
 /buildSrc/schema
