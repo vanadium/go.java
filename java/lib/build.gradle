@@ -1,4 +1,4 @@
-import groovy.json.internal.Charsets
+import groovy.json.JsonSlurper
 
 buildscript {
     repositories {
@@ -8,23 +8,21 @@ buildscript {
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
-        classpath 'io.v:gradle-plugin:1.9'
+        classpath 'io.v:gradle-plugin:1.11'
+        // TODO(razvanm): find a way to avoid hardcoding the platform.
+        classpath 'io.v:gradle-plugin-vdltool-macosx:1.11'
     }
 }
 
 apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'io.v.vdl'
 apply plugin: 'com.jfrog.bintray'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
 // You should change this after releasing a new version of the library. See the
 // list of published versions at https://repo1.maven.org/maven2/io/v/vanadium.
-def releaseVersion = '2.2.4'
+def releaseVersion = '2.2.6'
 
 dependencies {
     compile group: 'joda-time', name: 'joda-time', version: '2.7'
@@ -88,36 +86,57 @@ def String getMavenOsName() {
     }
 }
 
-def vanadiumCoreRoot = VanadiumEnvironment.getVanadiumEnvironment().v23corePath.getAbsolutePath()
-
+def vdlMirror = "${buildDir}/vdl-mirror"
 sourceSets.main.java.srcDirs += 'generated-src/vdl'
 
-class VanadiumEnvironment {
-    File goPath;
-    File v23corePath;
+task cleanVdlMirror(type: Delete) {
+    delete { vdlMirror }
+}
 
-    public static getVanadiumEnvironment() {
-        VanadiumEnvironment result = new VanadiumEnvironment()
+task populateVdlMirror(type: Exec, dependsOn: cleanVdlMirror) {
+    // We rely on a particular structure of the git repo.
+    workingDir '../../go'
+    commandLine 'go', 'mod', 'download', '-json', 'v.io'
 
-        if (!System.getenv().containsKey('GOPATH')) {
-            throw new InvalidUserDataException("GOPATH is not set.")
+    // Store the output instead of printing it.
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        def json = new JsonSlurper().parseText(standardOutput.toString())
+        logger.info("Vanadium Core root detected at $json.Dir")
+
+        project.copy {
+            // We need to indicate a dirMode because we copy from a cache that
+            // has the write bit removed from all the files and directories. The
+            // fact that the files are read-only is not a problem but the fact
+            // that the directories are read-only is a problem because it makes
+            // it impossible to copy files inside of them.
+            dirMode 0755
+
+            from(json.Dir) {
+                include '**/*.vdl'
+                include '**/vdl.config'
+                includeEmptyDirs = false
+            }
+
+            into "${vdlMirror}/v.io"
         }
 
-        if (!System.getenv().containsKey('VANADIUM_CORE_REPO')) {
-            throw new InvalidUserDataException("VANADIUM_CORE_REPO is not set.")
-        }
+        project.copy {
+            // We again rely on particular structure of the git repo.
+            from('../../go') {
+                include '**/*.vdl'
+                includeEmptyDirs = false
+            }
 
-        result.goPath = new File(System.getenv()['GOPATH'])
-        result.v23corePath = new File(System.getenv()['VANADIUM_CORE_REPO'])
-        return result
+            into "${vdlMirror}/v.io/x/jni"
+        }
     }
 }
 
-task checkVanadiumEnvironment {
-    VanadiumEnvironment.getVanadiumEnvironment()
-
+task checkVanadiumEnvironment() {
     if (System.getenv('JAVA_HOME') == null) {
-        throw new InvalidUserDataException("The JAVA_HOME environment variable is not set. ")
+        throw new InvalidUserDataException("The JAVA_HOME environment variable is not set.")
     }
     if (!isAmd64() && !isArm()) {
         throw new InvalidUserDataException("Java Vanadium builds only enabled on amd64 "
@@ -131,16 +150,18 @@ task checkVanadiumEnvironment {
 
 task goBuildVanadiumLib(type: Exec, dependsOn: checkVanadiumEnvironment) {
     def javaHome = System.getenv('JAVA_HOME')
-    environment CGO_CFLAGS: '-I' + javaHome + '/include' + ' ' +
-        '-I' + javaHome + '/include/' + getOsName()
+    environment CGO_CFLAGS: '-I' + javaHome + '/include' + ' ' + '-I' + javaHome + '/include/' + getOsName()
+
+    // We rely on a particular structure of the git repo.
     def output = ''
     if (isLinux()) {
-        output = 'build/libs/libv23.so'
+        output = '../java/lib/build/libs/libv23.so'
     } else {  // darwin
-        output = 'build/libs/libv23.dylib'
+        output = '../java/lib/build/libs/libv23.dylib'
     }
-    commandLine 'go', 'build', '-buildmode=c-shared', '-v', '-tags', 'java cgo',
-        '-o', output, 'v.io/x/jni/main'
+    workingDir '../../go'
+
+    commandLine 'go', 'build', '-buildmode=c-shared', '-v', '-tags', 'java cgo', '-o', output, 'v.io/x/jni/main'
 }
 
 // Add shared library dependency to our tests.
@@ -165,10 +186,6 @@ tasks.'processTestResources'.dependsOn(goBuildVanadiumLib)
 // Therefore we always run the tests even if Gradle thinks that there is no
 // need.
 tasks.'test'.outputs.upToDateWhen({ false })
-
-tasks.'test' << {
-    io.v.VanadiumTestXmlAggregator.mergeAllTestXmlFiles(new File("${buildDir}/test-results"), new File("${buildDir}/aggregated-test-results.xml"))
-}
 
 task buildVanadiumLib(dependsOn: goBuildVanadiumLib) {}
 
@@ -207,7 +224,7 @@ task emptyJar(type: Jar) {
 
     project.buildDir.mkdirs()
     File explanation = new File(project.buildDir, 'empty-jar.txt')
-    explanation.setText('This artifact has no Java sources or javadoc', Charsets.US_ASCII.name())
+    explanation.setText('This artifact has no Java sources or javadoc')
     from explanation
 }
 
@@ -236,8 +253,7 @@ def pomDependencies = new XmlParser().parseText(pomDependencyText)
 // Adds XML nodes representing fields required for publication to Maven central to the given node.
 def addMavenCentralMetadata(Node node) {
     node.appendNode('name', 'Vanadium Java library')
-    node.appendNode('description',
-            'Java libraries for writing Vanadium applications')
+    node.appendNode('description', 'Java libraries for writing Vanadium applications.')
     node.appendNode('url', 'https://github.com/vanadium/java')
 
     def license = node.appendNode('licenses').appendNode('license')
@@ -245,8 +261,7 @@ def addMavenCentralMetadata(Node node) {
     license.appendNode('url', 'https://github.com/vanadium/java/blob/master/LICENSE')
     license.appendNode('distribution', 'repo')
 
-    node.appendNode('scm').appendNode('url',
-            'https://github.com/vanadium/java.git')
+    node.appendNode('scm').appendNode('url', 'https://github.com/vanadium/java.git')
 
     def developerInfo = node.appendNode('developers').appendNode('developer')
     developerInfo.appendNode('id', 'vanadium')
@@ -281,16 +296,12 @@ publishing {
             artifactId 'vanadium'
             version releaseVersion
 
-            from components.java
-
-            // No archives in this one, it's a meta package only.
-            artifacts.clear()
-
-            // Maven Central does require source and javadoc jars
+            // Maven Central does require source and javadoc jars.
             artifact source: emptyJar, classifier: 'sources'
             artifact source: emptyJar, classifier: 'javadoc'
 
             pom.withXml {
+                asNode().appendNode('dependencies')
                 for (Node node : pomDependencies.children()) {
                     asNode().dependencies[0].append(node)
                 }
@@ -303,7 +314,7 @@ publishing {
             artifactId 'vanadium-natives-' + getMavenOsName()
             version releaseVersion
 
-            // Maven Central does require source and javadoc jars
+            // Maven Central does require source and javadoc jars.
             artifact source: emptyJar, classifier: 'sources'
             artifact source: emptyJar, classifier: 'javadoc'
 
@@ -317,18 +328,12 @@ publishing {
 }
 
 vdl {
-    inputPaths += [vanadiumCoreRoot, 'src'].join(File.separator)
-    vdlRootPath = [vanadiumCoreRoot, 'src', 'v.io', 'v23', 'vdlroot'].join(File.separator)
+    inputPaths += "${vdlMirror}"
     generateVdlRoot = true
-    vdlToolPath = 'vdl'
-    if (exec() {
-            commandLine "which", vdlToolPath
-            ignoreExitValue true
-        }.getExitValue() != 0) {
-        // If vdl is not found in the path, use the one in $GOROOT.
-        vdlToolPath = [vanadiumCoreRoot, 'bin', 'vdl'].join(File.separator)
-    }
-}
+}   
+
+// We need the vdlMirror to be populated before the prepateVdl task.
+tasks.'prepareVdl'.dependsOn(populateVdlMirror)
 
 bintray {
     user = project.properties.bintrayUsername
@@ -354,31 +359,4 @@ bintray {
 checkstyle {
     configFile = file('checkstyle_config.xml')
     configProperties.put('checkstyle_ignore_path', file('checkstyle_ignore.xml').getAbsolutePath())
-}
-
-findbugs {
-    toolVersion = "3.0.1"
-    excludeFilter = file('findbugs/findbugs_filter.xml')
-}
-
-tasks.withType(FindBugs) { findbugsTask ->
-    reports {
-        xml {
-            withMessages = true
-        }
-    }
-
-    // For each findbugs task, add a task to dump the findbugs report in plain
-    // text. For this, we translate the findbugs report XML to text using a
-    // custom XSLT template.
-    def reportTask = task "${findbugsTask.name}-report" << {
-        ant.xslt(in: findbugsTask.reports.xml.destination,
-                 out: findbugsTask.reports.xml.destination.path + '.txt',
-                 style: 'findbugs/findbugs_report.xsl')
-        println file(findbugsTask.reports.xml.destination.path + '.txt').text
-    }
-
-    // run the report task even if the findbugs check failed
-    findbugsTask.finalizedBy(reportTask)
-    tasks.check.dependsOn(reportTask)
 }

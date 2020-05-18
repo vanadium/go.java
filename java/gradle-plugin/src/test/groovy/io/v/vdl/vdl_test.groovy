@@ -3,7 +3,7 @@ import com.google.common.io.Files
 import io.v.vdl.VdlConfiguration
 import io.v.vdl.VdlPlugin
 import org.gradle.api.Project
-import org.gradle.api.internal.ClosureBackedAction
+import org.gradle.util.ClosureBackedAction
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.Test

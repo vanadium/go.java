@@ -19,29 +19,39 @@ class VdlPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.create('vdl', VdlConfiguration)
 
-        def extractTask = project.task('extractVdl', type: Copy) {
+        def extractVdlTask = project.task('extractVdl', type: Copy) {
+            description = 'Extracts the platform-specific vdl tool from the JAR provided by the gradle-plugin.'
             from {
                 getVdlToolJarFiles(project, project.buildscript.configurations.classpath)
             }
             into { new File(project.buildDir, 'vdltool') }
         }
+
         def clearVdlOutputTask = project.task('clearVdlOutput', type: Delete) {
             delete { project.vdl.outputPath }
             delete { project.vdl.transitiveVdlDir }
         }
-        def generateTask = project.task('generateVdl', type: Exec) {
+
+        def generateVdlTask = project.task('generateVdl', type: Exec) {
+            description = 'Runs the `vdl generate` to generate the Java source for all the .vdl files.'
         }
+
         def vdlTask = project.task('vdl') {
-            group = "Build"
-            description('Generates Java vdl source using the vdl tool')
+            group = 'Build'
+            description('Generates Java sources for the .vdl files using the vdl tool.')
         }
-        def prepareTask = project.task('prepareVdl') {
+
+        def prepareVdlTask = project.task('prepareVdl') {
+            description = 'Prepares the generateVdl task.'
+
             doLast {
                 List<String> vdlPaths = extractTransitiveVdlFilesAndGetInputPaths(project).asList()
                 List<String> outDirs = getJavaOutDirs(project)
 
-                generateTask.environment(VDLROOT: getVdlRootPath(project))
-                generateTask.environment(VDLPATH: vdlPaths.join(":"))
+                generateVdlTask.environment(VDLROOT: getVdlRootPath(project))
+                println "VDLROOT=${getVdlRootPath(project)}"
+                generateVdlTask.environment(VDLPATH: vdlPaths.join(":"))
+                println "VDLPATH=${vdlPaths.join(':')}"
                 String vdlToolPath = 'build/vdltool/vdl-' + getOsName()
                 if (project.vdl.vdlToolPath != "") {
                     vdlToolPath = project.vdl.vdlToolPath
@@ -55,17 +65,19 @@ class VdlPlugin implements Plugin<Project> {
                     commandLine.add('--java-out-pkg=' + project.vdl.packageTranslations.join(','))
                 }
                 commandLine.add('all')
-                generateTask.commandLine(commandLine)
+                generateVdlTask.commandLine(commandLine)
             }
         }
+
         def removeVdlRootTask = project.task('removeVdlRoot', type: Delete) {
             onlyIf { !project.vdl.generateVdlRoot }
             delete { project.vdl.outputPath + '/io/v/v23/vdlroot/' }
         }
-        extractTask.dependsOn(prepareTask)
-        generateTask.dependsOn(clearVdlOutputTask)
-        generateTask.dependsOn(extractTask)
-        removeVdlRootTask.dependsOn(generateTask)
+
+        extractVdlTask.dependsOn(prepareVdlTask)
+        generateVdlTask.dependsOn(clearVdlOutputTask)
+        generateVdlTask.dependsOn(extractVdlTask)
+        removeVdlRootTask.dependsOn(generateVdlTask)
         vdlTask.dependsOn(removeVdlRootTask)
 
         if (project.vdl.formatGeneratedVdl) {
@@ -84,6 +96,7 @@ class VdlPlugin implements Plugin<Project> {
         if (project.plugins.hasPlugin('java')) {
             project.compileJava.dependsOn(vdlTask)
             project.sourceSets.main.java.srcDir({ project.vdl.outputPath })
+            project.sourceSets.main.java.srcDir({ project.vdl.transitiveVdlDir })
         }
 
         if (project.hasProperty('clean')) {
@@ -128,6 +141,11 @@ class VdlPlugin implements Plugin<Project> {
         // Go through the dependencies of all configurations looking for jar files containing
         // VDL files.
         project.configurations.each({
+            if (!it.canBeResolved) {
+                // Iterating over the configurations that cannot be resolved
+                // does not work.
+                return
+            }
             it.each({
                 if (it.getName().endsWith('.jar') && it.exists()) {
                     if (extractVdlFiles(it, new File(project.getProjectDir(), project.vdl.transitiveVdlDir))) {
@@ -171,7 +189,7 @@ class VdlPlugin implements Plugin<Project> {
     }
 
     /**
-     * Extracts any vdl files in the given jar file to the given destination directory. Returns
+     * Extracts any .vdl files in the given jar file to the given destination directory. Returns
      * {@code true} if any files were extracted.
      */
     private static boolean extractVdlFiles(File jarFile, File destination) {

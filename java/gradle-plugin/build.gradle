@@ -1,6 +1,6 @@
 // You should change this after releasing a new version of the gradle plugin. See the
 // list of published versions at https://repo1.maven.org/maven2/io/v/gradle-plugin.
-def releaseVersion = '1.9'
+def releaseVersion = '1.11'
 
 buildscript {
     repositories {
@@ -51,11 +51,13 @@ def pomDependencies = new Node(null, 'dependencies')
 
 platforms.each({ platform ->
     task "buildVdl${platform.name}"(type: Exec) {
-        description 'Build the VDL tool'
+        description "Builds the vdl tool for ${platform.name}."
         group 'Build'
         environment GOOS: platform.goOs
         environment GOARCH: platform.goArch
-        commandLine 'go', 'build', '-o', "build/vdltool/vdl-${platform.name}",
+        // We rely on a particular structure of the git repo.
+        workingDir '../../go'
+        commandLine 'go', 'build', '-o', "../java/gradle-plugin/build/vdltool/vdl-${platform.name}",
                 'v.io/x/ref/cmd/vdl'
     }
 
@@ -94,7 +96,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 def addMavenCentralMetadata(Node node) {
     node.appendNode('name', 'Vanadium VDL Gradle plugin')
     node.appendNode('description',
-            'A Gradle plugin to make it easy to use VDL in Java or Android projects')
+            'A Gradle plugin to make it easy to use VDL in Java or Android projects.')
     node.appendNode('url', 'https://github.com/vanadium/java/tree/master/gradle-plugin')
 
     def license = node.appendNode('licenses').appendNode('license')
