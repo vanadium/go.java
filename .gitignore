@@ -13,6 +13,9 @@ local.properties
 .metadata/
 .recommenders/
 
+# VS Code
+.vscode/
+.project
+
 # Generated source
 generated-src/
-android-lib/src/main/jniLibs/
