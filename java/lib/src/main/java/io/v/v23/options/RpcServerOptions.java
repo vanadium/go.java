@@ -32,7 +32,7 @@ public final class RpcServerOptions {
     }
 
     /**
-     * @deprecated For migration purposes only; call overloads taking {@code RpcServerOptions}
+     * @Deprecated For migration purposes only; call overloads taking {@code RpcServerOptions}
      *  directly.
      */
     @Nullable

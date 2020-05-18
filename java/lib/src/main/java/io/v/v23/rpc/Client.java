@@ -20,7 +20,7 @@ import io.v.v23.options.RpcOptions;
  */
 public interface Client {
     /**
-     * @deprecated Use {@link #startCall(VContext, String, String, Object[], Type[], RpcOptions)}
+     * @Deprecated Use {@link #startCall(VContext, String, String, Object[], Type[], RpcOptions)}
      *  instead, which uses a strongly-typed {@link RpcOptions} object that supports more features.
      */
     @CheckReturnValue

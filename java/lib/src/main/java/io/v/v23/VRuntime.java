@@ -92,7 +92,7 @@ public interface VRuntime {
                            RpcServerOptions opts) throws VException;
 
     /**
-     * @deprecated Use
+     * @Deprecated Use
      *  {@link #withNewServer(VContext, String, Object, Authorizer, RpcServerOptions)}.
      */
     VContext withNewServer(VContext ctx, String name, Object object, Authorizer authorizer,
@@ -135,7 +135,7 @@ public interface VRuntime {
                            RpcServerOptions opts) throws VException;
 
     /**
-     * @deprecated Use {@link #withNewServer(VContext, String, Dispatcher, RpcServerOptions)}
+     * @Deprecated Use {@link #withNewServer(VContext, String, Dispatcher, RpcServerOptions)}
      */
     VContext withNewServer(VContext ctx, String name, Dispatcher dispatcher,
                            Options opts) throws VException;

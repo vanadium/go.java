@@ -316,7 +316,7 @@ public class V {
     }
 
     /**
-     * @deprecated Use
+     * @Deprecated Use
      *  {@link #withNewServer(VContext, String, Object, Authorizer, RpcServerOptions)} instead.
      */
     public static VContext withNewServer(VContext ctx, String name, Object object,
@@ -385,7 +385,7 @@ public class V {
     }
 
     /**
-     * @deprecated Use {@link #withNewServer(VContext, String, Dispatcher, RpcServerOptions)}
+     * @Deprecated Use {@link #withNewServer(VContext, String, Dispatcher, RpcServerOptions)}
      */
     public static VContext withNewServer(VContext ctx, String name, Dispatcher dispatcher,
                                          Options opts) throws VException {

@@ -257,7 +257,7 @@ public class VdlArray<T> extends VdlValue implements List<T> {
     private class VdlArrayIterator implements ListIterator<T> {
         private int position;
 
-        public VdlArrayIterator(int index) {
+        VdlArrayIterator(int index) {
             if (index < 0 || index >= VdlArray.this.size()) {
                 throw new IllegalArgumentException("Index out of bounds");
             }

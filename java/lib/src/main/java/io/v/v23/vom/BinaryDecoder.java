@@ -636,7 +636,7 @@ public class BinaryDecoder {
         private final Builder builder;
         private final Map<TypeId, PendingType> pendingTypes;
 
-        public WireToVdlTypeBuilder() {
+        WireToVdlTypeBuilder() {
             builder = new Builder();
             pendingTypes = new HashMap<TypeId, PendingType>();
         }

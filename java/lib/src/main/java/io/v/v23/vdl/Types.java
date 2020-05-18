@@ -462,7 +462,7 @@ public final class Types {
         private final Builder builder;
         private final Map<Type, PendingType> pendingTypes;
 
-        public ReflectToVdlTypeBuilder() {
+        ReflectToVdlTypeBuilder() {
             builder = new Builder();
             pendingTypes = new HashMap<Type, PendingType>();
         }
@@ -672,7 +672,7 @@ public final class Types {
         private static final class PendingVdlField {
             final String name;
             final PendingType type;
-            public PendingVdlField(String name, PendingType type) {
+            PendingVdlField(String name, PendingType type) {
                 this.name = name;
                 this.type = type;
             }
@@ -686,7 +686,7 @@ public final class Types {
         private final Type rawType;
         private final Type[] arguments;
 
-        public ParameterizedTypeImpl(Type rawType, Type ... arguments) {
+        ParameterizedTypeImpl(Type rawType, Type ... arguments) {
             this.rawType = rawType;
             this.arguments = arguments;
         }

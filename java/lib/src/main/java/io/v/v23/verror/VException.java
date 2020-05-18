@@ -86,7 +86,7 @@ public class VException extends Exception {
      * Action expected to be performed by a typical client receiving an error that perhaps
      * it does not understand.
      */
-    public static enum ActionCode {
+    public enum ActionCode {
         /**
          * Do not retry.
          */
@@ -119,7 +119,7 @@ public class VException extends Exception {
 
         private final int value;
 
-        private ActionCode(int value) {
+        ActionCode(int value) {
             this.value = value;
         }
 

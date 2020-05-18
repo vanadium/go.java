@@ -41,7 +41,7 @@ public final class RpcOptions {
     }
 
     /**
-     * @deprecated For migration purposes only; call overloads taking {@code RpcOptions} directly.
+     * @Deprecated For migration purposes only; call overloads taking {@code RpcOptions} directly.
      */
     @Nullable public static RpcOptions migrateOptions(@Nullable final Options legacy) {
         return legacy == null ? null : new RpcOptions()
