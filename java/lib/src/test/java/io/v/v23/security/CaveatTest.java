@@ -83,6 +83,8 @@ public class CaveatTest extends TestCase {
             assertThat(Arrays.asList(result)).containsExactly("alice");
         }
         {
+            // This will cause for a VException to be logged on the
+            // STANDARD_ERROR ('gradlew -i' is one way to see it).
             Call call = VSecurity.newCall(new CallParams()
                     .withLocalPrincipal(p1)
                     .withRemoteBlessings(alice)

@@ -108,6 +108,8 @@ public class BinaryDecoderTest extends TestCase {
         }
     }
 
+    // This test will cause some output to STANDARD_ERROR ('gradlew -i' is one
+    // way to see it).
     public void testDecodeVExceptionBadParams() throws Exception {
         Object[] params = {
                 ImmutableList.<String>of("3"),
