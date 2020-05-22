@@ -66,7 +66,6 @@ public class V {
     // before the process is about to terminate.  This method is shared between Java and Android
     // implementations.
     protected static VContext initGlobalShared(Options opts) {
-        System.err.println("java.library.path = " + System.getProperty("java.library.path"));
         List<Throwable> errors = new ArrayList<Throwable>();
         try {
             // First, attempt to find the library in java.library.path.
