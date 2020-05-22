@@ -27,10 +27,13 @@ func Java_io_v_v23_V_nativeInitGlobalShared(jenv *C.JNIEnv, jVClass C.jclass) {
 	if len(os.Args) > 1 {
 		os.Args = os.Args[:1]
 	}
+
 	// Send all vlog logs to stderr during the init so that we don't crash on android trying
 	// to create a log file.  These settings will be overwritten in
 	// nativeInitJava/nativeInitAndroid.
-	vlog.Log.Configure(vlog.OverridePriorConfiguration(true), vlog.LogToStderr(true))
+	//
+	// TODO(razvanm): find a way to make this work again.
+	// vlog.Log.Configure(vlog.OverridePriorConfiguration(true), vlog.LogToStderr(true))
 
 	if err := jutil.Init(env); err != nil {
 		jutil.JThrowV(env, err)
