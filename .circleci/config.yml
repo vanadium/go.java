@@ -1,0 +1,68 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/openjdk:13.0
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: v1-gimme-1.14.2
+
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "java/gradle-plugin/gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "java/gradle/wrapper/gradle-wrapper.properties" }}
+
+      - restore_cache:
+          key: v1-gradle-caches-{{ checksum "java/gradle-plugin/build.gradle" }}-{{ checksum "java/lib/build.gradle" }}
+
+      - run:
+          name: gradle-plugin
+          working_directory: java/gradle-plugin
+          command: |
+            eval $(../../.circleci/gimme 1.14.2)
+            ./gradlew test publishToMavenLocal -i
+
+      - run:
+          name: lib
+          working_directory: java/lib
+          command: |
+            eval $(../../.circleci/gimme 1.14.2)
+            ../gradlew test publishToMavenLocal -i
+
+      - store_test_results:
+          path: java/gradle-plugin/build/test-results
+
+      - store_test_results:
+          path: java/lib/build/test-results
+
+      - store_artifacts:
+          path: ~/.m2/repository/
+          destination: maven-packages
+
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "java/gradle-plugin/gradle/wrapper/gradle-wrapper.properties" }}-{{ checksum "java/gradle/wrapper/gradle-wrapper.properties" }}
+
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-caches-{{ checksum "java/gradle-plugin/build.gradle" }}-{{ checksum "java/lib/build.gradle" }}
+
+      - save_cache:
+          paths:
+            - ~/.gimme
+          key: v1-gimme-1.14.2
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+    - test
