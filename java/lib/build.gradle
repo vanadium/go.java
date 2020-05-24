@@ -1,3 +1,7 @@
+// You should change this after releasing a new version of the library. See the
+// list of published versions at https://repo1.maven.org/maven2/io/v/vanadium.
+def releaseVersion = '2.2.26-SNAPSHOT'
+
 import groovy.json.JsonSlurper
 
 buildscript {
@@ -8,9 +12,9 @@ buildscript {
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
-        classpath 'io.v:gradle-plugin:1.11'
-        // TODO(razvanm): find a way to avoid hardcoding the platform.
-        classpath 'io.v:gradle-plugin-vdltool-macosx:1.11'
+        classpath 'io.v:gradle-plugin:1.11-SNAPSHOT'
+        classpath 'io.v:gradle-plugin-vdltool-macosx:1.11-SNAPSHOT'
+        classpath 'io.v:gradle-plugin-vdltool-linux:1.11-SNAPSHOT'
     }
 }
 
@@ -19,10 +23,6 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'io.v.vdl'
 apply plugin: 'com.jfrog.bintray'
-
-// You should change this after releasing a new version of the library. See the
-// list of published versions at https://repo1.maven.org/maven2/io/v/vanadium.
-def releaseVersion = '2.2.6'
 
 dependencies {
     compile group: 'joda-time', name: 'joda-time', version: '2.7'

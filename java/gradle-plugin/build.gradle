@@ -1,6 +1,6 @@
 // You should change this after releasing a new version of the gradle plugin. See the
 // list of published versions at https://repo1.maven.org/maven2/io/v/gradle-plugin.
-def releaseVersion = '1.11'
+def releaseVersion = '1.11-SNAPSHOT'
 
 buildscript {
     repositories {
@@ -21,9 +21,6 @@ apply plugin: 'com.jfrog.bintray'
 repositories {
     mavenCentral()
 }
-
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
 
 dependencies {
     compile gradleApi()
@@ -152,10 +149,6 @@ publishing {
             }
         })
     }
-}
-
-wrapper {
-    gradleVersion = '2.4'
 }
 
 bintray {
