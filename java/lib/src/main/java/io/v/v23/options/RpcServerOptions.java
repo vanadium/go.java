@@ -14,7 +14,7 @@ import io.v.v23.Options;
 /**
  * Strongly-typed alternative to {@link io.v.v23.Options} for RPC servers, supporting more options.
  * See also
- * <a href="https://github.com/vanadium/go.v23/blob/master/options/options.go">v.io/v23/options</a>.
+ * <a href="https://github.com/vanadium/core/blob/master/v23/options/options.go">v.io/v23/options</a>.
  */
 public final class RpcServerOptions {
     private static final Duration DEFAULT_LAME_DUCK_TIMEOUT = Duration.standardSeconds(0);

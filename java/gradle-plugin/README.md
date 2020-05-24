@@ -99,4 +99,4 @@ contains a JAR file built as described above, it will copy those VDL files into
 its `transitiveVdlDir`. It will make those VDL files available to the VDL tool
 so that VDL files in one of the `inputPaths` may refer to them.
 
-[VDL option]: https://github.com/vanadium/go.ref/blob/master/cmd/vdl/main.go#L441
+[VDL option]: https://github.com/vanadium/core/blob/de9bfc7dcb663b2e814f8d419c360e64ce815157/x/ref/cmd/vdl/main.go#L435
