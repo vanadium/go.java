@@ -6,8 +6,7 @@ Releasing Java components
 This document describes the process for releasing Vanadium Java components to
 JCenter and Maven Central. The components covered by this document are the
 
-* [core Vanadium Java] libraries
-* [Vanadium Android] libraries
+* [Vanadium Java] libraries
 * [Gradle plugin]
 
 ## Background
@@ -90,12 +89,12 @@ The steps to release the [Gradle plugin] are:
   go to the [JCenter Gradle plugin] page. If this is a major release, increment the
   major release number and set the minor number to zero. If it's a minor
   release, increment the minor number and leave the major number unchanged
-* edit `$JIRI_ROOT/release/java/gradle-plugin/build.gradle` and change the
-  `releaseVersion` variable to the new release number
+* edit `java/gradle-plugin/build.gradle` and change the `releaseVersion`
+  variable to the new release number
 * run the following commands:
 
 ```sh
-cd $JIRI_ROOT/release/java/gradle-plugin
+cd java/gradle-plugin
 ./gradlew clean bintrayUpload
 ```
 
@@ -120,13 +119,6 @@ Central shortly (usually within a matter of 10 minutes or so). You can verify by
 visiting the [Maven Central page] for the plugin. When the new version number
 appears in the list, the plugin has been published.
 
-## Java and Android libraries
-
-Releasing these libraries is similar to releasing the Gradle plugin with one
-notable exception: it must be performed once on Linux and once on Darwin. This
-is due to the fact that, at this point in time, the Vanadium Java libraries
-cannot be cross-compiled between the two platforms.
-
 ### Building
 
 On either Linux or Darwin, perform the following steps:
@@ -135,22 +127,19 @@ On either Linux or Darwin, perform the following steps:
   go to the [JCenter Vanadium library] page. If this is a major release,
   increment the major release number and set the minor number to zero. If it's a
   minor release, increment the minor number and leave the major number unchanged
-* edit `$JIRI_ROOT/release/java/lib/build.gradle` and change the
-  `releaseVersion` variable to the new release number
-* edit `$JIRI_ROOT/release/java/android-lib/build.gradle` and change the
-  `releaseVersion` variable to the same release number
+* edit `java/lib/build.gradle` and change the `releaseVersion` variable to the
+  new release number
 * run the following commands:
 
 ```sh
-cd $JIRI_ROOT/release/java
+cd java
 ./gradlew :lib:clean :lib:bintrayUpload
-./gradlew :android-lib:clean :android-lib:bintrayUpload
 ```
 
 Now, switch to the other platform (i.e. not the one you used for the above
 steps) and:
 
-* edit the `$JIRI_ROOT/release/java/lib/build.gradle` file
+* edit the `java/lib/build.gradle` file
 * change the `releaseVersion` variable to match the same variable from the
   previous steps
 * find the line that reads
@@ -169,7 +158,7 @@ steps) and:
 * run the following commands:
 
 ```sh
-cd $JIRI_ROOT/release/java
+cd java
 ./gradlew :lib:clean :lib:bintrayUpload
 ```
 
@@ -204,45 +193,18 @@ the libraries to the maven local [repository].
 * run the following commands:
 
 ```sh
-cd $JIRI_ROOT/release/java
+cd java
 ./gradlew :lib:clean :lib:publishToMavenLocal
-./gradlew :android-lib:clean :android-lib:publishToMavenLocal
 ```
 
 * you may now use your local libraries by specifying `mavenLocal()` in the
-  "alprojects" repositories clause of your project build.gradle file.
+  "allprojects" repositories clause of your project build.gradle file.
 * For Android Studio to pick up these changes you will need to run
   "Build >> Clean project" in your IDE.
 
-## Syncbase Library
-
-To release a new version of the high-level syncbase API, follow the above steps,
-except to upload to bintray, run:
-
-```
-cd $JIRI_ROOT/release/java/syncbase
-./gradlew clean bintrayUpload
-```
-
-And to use a local version of the library, run:
-
-```
-cd $JIRI_ROOT/release/java/syncbase
-./gradlew clean install
-```
-
-### Syncbase Tutorials
-
-When releasing a new version of the Syncbase library, be sure to also update
-the Syncbase tutorials in the website repo.
-
-Refer to the `upgrade-syncbase-android` build rule in the [website Makefile]'s
-for instructions.
-
 [repository]: https://maven.apache.org/guides/introduction/introduction-to-repositories.html
-[core vanadium Java]: https://github.com/vanadium/java/tree/master/lib
-[Vanadium Android]: https://github.com/vanadium/java/tree/master/android-lib
-[Gradle plugin]: https://github.com/vanadium/java/tree/master/gradle-plugin
+[Vanadium Java]: https://github.com/vanadium/go.java/tree/master/java/lib
+[Gradle plugin]: https://github.com/vanadium/go.java/tree/master/java/gradle-plugin
 [Bintray home page]: https://bintray.com/
 [Vanadium Bintray organization]: https://bintray.com/vanadium
 [Sonatype JIRA]: https://issues.sonatype.org/
