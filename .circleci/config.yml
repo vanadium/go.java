@@ -23,6 +23,13 @@ jobs:
           key: v1-gradle-caches-{{ checksum "java/gradle-plugin/build.gradle" }}-{{ checksum "java/lib/build.gradle" }}
 
       - run:
+          name: x/jni
+          working_directory: x/jni
+          command: |
+            eval $(../../.circleci/gimme 1.14.2)
+            go test ./...
+
+      - run:
           name: gradle-plugin
           working_directory: java/gradle-plugin
           command: |
