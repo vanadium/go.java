@@ -109,6 +109,7 @@ class VdlPlugin implements Plugin<Project> {
                 // Add VDL files in VDL input paths to project resources.
                 project.vdl.inputPaths.each {
                     project.sourceSets.main.resources.srcDirs(it).include('**/*.vdl')
+                    project.sourceSets.main.resources.srcDirs(it).include('**/vdl.config')
                 }
 
                 // Ensure that empty directories are not copied.
@@ -129,7 +130,7 @@ class VdlPlugin implements Plugin<Project> {
                 return candidateVdlRoot.getPath()
             }
 
-            throw new InvalidUserDataException('could not determine a value for VDLROOT, '
+            throw new InvalidUserDataException('Could not determine a value for VDLROOT, '
                     + 'you should check to ensure your project depends on vanadium')
         } else {
             return project.vdl.vdlRootPath
@@ -198,9 +199,15 @@ class VdlPlugin implements Plugin<Project> {
         boolean extracted = false
         while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement()
-            if (entry.isDirectory() || !entry.getName().endsWith('.vdl')) {
+
+            if (entry.isDirectory()) {
                 continue
             }
+
+            if (!entry.getName().endsWith('.vdl') && !entry.getName().endsWith('vdl.config')) {
+                continue
+            }
+
             // Create the file's directory.
             File destinationFile = new File(destination, entry.getName())
             destinationFile.getParentFile().mkdirs()

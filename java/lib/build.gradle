@@ -113,6 +113,10 @@ task populateVdlMirror(type: Exec, dependsOn: cleanVdlMirror) {
             // it impossible to copy files inside of them.
             dirMode 0755
 
+            // We also make files writable to make it possible to overwrite
+            // them.
+            fileMode 0644
+
             from(json.Dir) {
                 include '**/*.vdl'
                 include '**/vdl.config'
