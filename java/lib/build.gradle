@@ -95,7 +95,7 @@ task cleanVdlMirror(type: Delete) {
 
 task populateVdlMirror(type: Exec, dependsOn: cleanVdlMirror) {
     // We rely on a particular structure of the git repo.
-    workingDir '../../go'
+    workingDir '../../x/jni'
     commandLine 'go', 'mod', 'download', '-json', 'v.io'
 
     // Store the output instead of printing it.
@@ -124,7 +124,7 @@ task populateVdlMirror(type: Exec, dependsOn: cleanVdlMirror) {
 
         project.copy {
             // We again rely on particular structure of the git repo.
-            from('../../go') {
+            from('../../x/jni') {
                 include '**/*.vdl'
                 includeEmptyDirs = false
             }
@@ -155,11 +155,11 @@ task goBuildVanadiumLib(type: Exec, dependsOn: checkVanadiumEnvironment) {
     // We rely on a particular structure of the git repo.
     def output = ''
     if (isLinux()) {
-        output = '../java/lib/build/libs/libv23.so'
+        output = '../../java/lib/build/libs/libv23.so'
     } else {  // darwin
-        output = '../java/lib/build/libs/libv23.dylib'
+        output = '../../java/lib/build/libs/libv23.dylib'
     }
-    workingDir '../../go'
+    workingDir '../../x/jni'
 
     commandLine 'go', 'build', '-buildmode=c-shared', '-v', '-tags', 'java cgo', '-o', output, 'v.io/x/jni/main'
 }

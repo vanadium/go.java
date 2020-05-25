@@ -53,8 +53,8 @@ platforms.each({ platform ->
         environment GOOS: platform.goOs
         environment GOARCH: platform.goArch
         // We rely on a particular structure of the git repo.
-        workingDir '../../go'
-        commandLine 'go', 'build', '-o', "../java/gradle-plugin/build/vdltool/vdl-${platform.name}",
+        workingDir '../../x/jni'
+        commandLine 'go', 'build', '-o', "../../java/gradle-plugin/build/vdltool/vdl-${platform.name}",
                 'v.io/x/ref/cmd/vdl'
     }
 
