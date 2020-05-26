@@ -41,7 +41,7 @@ jobs:
           working_directory: java/lib
           command: |
             eval $(../../.circleci/gimme 1.14.2)
-            ../gradlew test publishToMavenLocal -i
+            ./gradlew test publishToMavenLocal -i
 
       - store_test_results:
           path: java/gradle-plugin/build/test-results
